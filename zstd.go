@@ -4,48 +4,48 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
-// ZSTDTranscoder provides transparent Z - standard compression and decompression using pre-initialized
-// encoder and decoder instances. It is designed for high-performance scenarios where the same
-// transcoder instance is reused across many operations. The implementation maintains internal
-// state (the encoder and decoder) and is safe for concurrent use because the underlying zstd
-// library guarantees thread-safety of its Writer and Reader types when properly configured.
-type ZSTDTranscoder struct {
-	encoder *zstd.Encoder
-	decoder *zstd.Decoder
+var (
+	// Shared global Z - standard encoder instance used by all ZSTDTranscoder objects.
+	// Initialized once at startup with maximum speed settings and high parallelism.
+	// Thread-safe and optimized for extremely high compression throughput.
+	encoder, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedFastest), zstd.WithEncoderConcurrency(10))
+
+	// Shared global Z - standard decoder instance used by all ZSTDTranscoder objects.
+	// Pre-configured with multiple worker threads to achieve peak decompression performance.
+	// Thread-safe and designed for ultra-fast decompression in hot paths.
+	decoder, _ = zstd.NewReader(nil, zstd.WithDecoderConcurrency(4))
+)
+
+// ZSTDTranscoder provides zero-allocation, high-throughput Zstandard compression and decompression
+// by reusing globally pre-configured encoder and decoder instances.
+// It has no internal state — all heavy lifting is done by the shared, thread-safe global objects.
+// This design eliminates per-instance initialization overhead and maximizes performance
+// in hot paths (caching, messaging, logging, etc.) while remaining safe for concurrent use.
+type ZSTDTranscoder struct{}
+
+// NewZSTDTranscoder returns a lightweight transcoder instance that operates on the global
+// pre-initialized encoder and decoder. No allocation or setup is performed — the instance
+// is immediately ready for use and can be safely shared across the entire application.
+func NewZSTDTranscoder() *ZSTDTranscoder {
+	return &ZSTDTranscoder{}
 }
 
-// NewZSTDTranscoder creates a new ZSTDTranscoder with a fully configured encoder and decoder.
-// The encoder is initialized with the highest compression level for optimal ratio.
-// Both objects are created with nil writers/readers because EncodeAll/DecodeAll do not require
-// an io.Writer/io.Reader - they operate on complete byte slices.
-// On any error during initialization, resources are cleaned up and the error is propagated.
-func NewZSTDTranscoder() (*ZSTDTranscoder, error) {
-	enc, _ := zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedFastest))
-	dec, _ := zstd.NewReader(nil)
-
-	return &ZSTDTranscoder{encoder: enc, decoder: dec}, nil
-}
-
-// Compress accepts arbitrary input data and returns its fully Zstandard-compressed representation.
-// It uses the fast EncodeAll path that compresses the entire input in one call and appends
-// the result to a freshly allocated destination buffer of appropriate capacity.
-// The returned slice is always a new allocation owned by the caller.
+// Compress compresses the input data in a single fast operation using the shared global encoder.
+// It uses EncodeAll which is optimized for complete in-memory buffers and produces
+// a fully framed, independently decompression output.
+// The result is allocated once and returned — no internal buffers are reused.
 func (t *ZSTDTranscoder) Compress(src []byte) ([]byte, error) {
-	return t.encoder.EncodeAll(src, make([]byte, 0, len(src))), nil
+	// EncodeAll appends to the provided dest buffer; we pass a zero-length slice with capacity
+	// to avoid extra allocations while still getting a fresh result slice.
+	// Docs: https://github.com/klauspost/compress/tree/master/zstd#blocks
+	return encoder.EncodeAll(src, make([]byte, 0, len(src))), nil
 }
 
-// Decompress accepts Zstandard-compressed data and returns the original uncompressed bytes.
+// Decompress accepts Z - standard-compressed data and returns the original uncompressed bytes.
 // It uses the convenient DecodeAll method which handles the complete decompression in a single
 // operation. The destination buffer is managed internally, the returned slice is a new allocation
 // owned by the caller. Any error during decompression (corrupted data, incomplete input, etc.)
 // is returned to the caller.
 func (t *ZSTDTranscoder) Decompress(src []byte) ([]byte, error) {
-	return t.decoder.DecodeAll(src, nil)
-}
-
-// Close releases resources held by the encoder and decoder (e.g. compression dictionaries,
-// internal buffers). It is safe to call multiple times.
-func (t *ZSTDTranscoder) Close() {
-	_ = t.encoder.Close()
-	t.decoder.Close()
+	return decoder.DecodeAll(src, nil)
 }
