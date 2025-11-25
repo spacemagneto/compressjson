@@ -18,10 +18,7 @@ import (
 func TestZSTDTranscoder(t *testing.T) {
 	t.Parallel()
 
-	transcoder, err := NewZSTDTranscoder()
-	assert.NoError(t, err, "Failed init new zstd transcoder")
-
-	defer transcoder.Close()
+	zstdTranscoder := NewZSTDTranscoder()
 
 	cases := []struct {
 		name        string
@@ -57,7 +54,7 @@ func TestZSTDTranscoder(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			compressed, err := transcoder.Compress(tt.input)
+			compressed, err := zstdTranscoder.Compress(tt.input)
 			assert.NoError(t, err, "Compress must succeed for valid input")
 
 			dataToDecompress := compressed
@@ -65,7 +62,7 @@ func TestZSTDTranscoder(t *testing.T) {
 				dataToDecompress = tt.corruptFunc(compressed)
 			}
 
-			decompressed, err := transcoder.Decompress(dataToDecompress)
+			decompressed, err := zstdTranscoder.Decompress(dataToDecompress)
 
 			if tt.wantErr {
 				assert.Error(t, err, "Decompress must return an error for corrupted or invalid input")
