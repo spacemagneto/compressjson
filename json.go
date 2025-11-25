@@ -3,7 +3,7 @@ package compressjson
 import "github.com/goccy/go-json"
 
 // JSONTranscoder provides a generic, stateless wrapper for JSON serialization and deserialization.
-// It enables type-safe marshalling and unmarshalling of arbitrary Go values while preserving
+// It enables type-safe marshaling and unmarshalling of arbitrary Go values while preserving
 // full compatibility with standard JSON encoding rules (struct tags, custom Marshal/Unmarshal, etc.).
 type JSONTranscoder[T any] struct{}
 
