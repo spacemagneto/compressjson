@@ -69,3 +69,10 @@ func main() {
 ### Testing Support
 
 For users integrating and testing compressjson in various scenarios (e.g., handling specific errors, simulating compression/decompression outcomes), the repository includes a dedicated transcoder mock pkg that provides the MockTranscoder implementation. This facilitates robust unit testing and integration testing without requiring actual Zstd operations.
+
+
+# License
+
+----------------------------------
+
+This package is licensed under the Apache License, Version 2.0. See the LICENSE file for details.
