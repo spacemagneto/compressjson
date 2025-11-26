@@ -1,7 +1,5 @@
 package lib
 
-import "time"
-
 // sample payloads of different sizes and compressibility
 var (
 	// Small payload – typical short event or config object
@@ -24,15 +22,6 @@ var (
 		`{"level":"info","ts":"2025-08-09T10:00:00.000Z","msg":"request completed","path":"/api/v1/users","method":"GET","duration_ms":12} `,
 		1000,
 	))
-
-	// Large random-like payload – simulates encrypted data or already-compressed content (worst-case ratio)
-	largeRandomPayload = func() []byte {
-		b := make([]byte, 500_000)
-		for i := range b {
-			b[i] = byte(time.Now().UnixNano() >> (i % 8))
-		}
-		return b
-	}()
 )
 
 // helper to generate repeated compressible text
