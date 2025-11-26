@@ -1,0 +1,7 @@
+packages:
+  github.com/spacemagneto/compressjson:
+    config:
+      all: True
+    interfaces:
+      Transcoder:
+        config:
