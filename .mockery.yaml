@@ -1,7 +1,9 @@
 packages:
   github.com/spacemagneto/compressjson:
     config:
-      all: True
+      dir: "{{.InterfaceDir}}"
+      filename: "mocks/mocks.go"
+      structname: "{{.Mock}}{{.InterfaceName}}"
     interfaces:
       Transcoder:
         config:
