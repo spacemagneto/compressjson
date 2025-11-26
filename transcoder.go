@@ -6,7 +6,7 @@ import (
 	"github.com/spacemagneto/compressjson/lib"
 )
 
-// transcoder is a concrete, high-performance implementation of transcoder[T]
+// Transcoder is a concrete, high-performance implementation of transcoder[T]
 // designed for low-latency, high-throughput scenarios. It is safe for concurrent use
 // by multiple goroutines and reuses internal buffers and native resources across calls.
 // Call Close when the transcoder is no longer needed to free memory.
