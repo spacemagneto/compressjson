@@ -1,4 +1,4 @@
-package compressjson
+package lib
 
 import "time"
 

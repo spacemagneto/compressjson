@@ -1,4 +1,4 @@
-package compressjson
+package lib
 
 import (
 	"github.com/klauspost/compress/zstd"
@@ -18,13 +18,13 @@ var (
 
 // ZSTDTranscoder provides zero-allocation, high-throughput Zstandard compression and decompression
 // by reusing globally pre-configured encoder and decoder instances.
-// It has no internal state — all heavy lifting is done by the shared, thread-safe global objects.
+// It has no internal state - all heavy lifting is done by the shared, thread-safe global objects.
 // This design eliminates per-instance initialization overhead and maximizes performance
 // in hot paths (caching, messaging, logging, etc.) while remaining safe for concurrent use.
 type ZSTDTranscoder struct{}
 
 // NewZSTDTranscoder returns a lightweight transcoder instance that operates on the global
-// pre-initialized encoder and decoder. No allocation or setup is performed — the instance
+// pre-initialized encoder and decoder. No allocation or setup is performed - the instance
 // is immediately ready for use and can be safely shared across the entire application.
 func NewZSTDTranscoder() *ZSTDTranscoder {
 	return &ZSTDTranscoder{}
@@ -33,7 +33,7 @@ func NewZSTDTranscoder() *ZSTDTranscoder {
 // Compress compresses the input data in a single fast operation using the shared global encoder.
 // It uses EncodeAll which is optimized for complete in-memory buffers and produces
 // a fully framed, independently decompression output.
-// The result is allocated once and returned — no internal buffers are reused.
+// The result is allocated once and returned - no internal buffers are reused.
 func (t *ZSTDTranscoder) Compress(src []byte) ([]byte, error) {
 	// EncodeAll appends to the provided dest buffer; we pass a zero-length slice with capacity
 	// to avoid extra allocations while still getting a fresh result slice.

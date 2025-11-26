@@ -1,16 +1,19 @@
 package compressjson
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/spacemagneto/compressjson/lib"
+)
 
 // transcoder is a concrete, high-performance implementation of transcoder[T]
 // designed for low-latency, high-throughput scenarios. It is safe for concurrent use
 // by multiple goroutines and reuses internal buffers and native resources across calls.
-//
 // Call Close when the transcoder is no longer needed to free memory.
 type transcoder[T any] struct {
-	jsonTranscoder     *JSONTranscoder[T]
-	standardTranscoder *ZSTDTranscoder
-	binaryTranscoder   *Base64Transcoder
+	jsonTranscoder     *lib.JSONTranscoder[T]
+	standardTranscoder *lib.ZSTDTranscoder
+	binaryTranscoder   *lib.Base64Transcoder
 }
 
 // NewTranscoder creates a ready-to-use transcoder for type T.
@@ -18,9 +21,9 @@ type transcoder[T any] struct {
 // The returned value satisfies Transcoder[T] and can be shared globally.
 func NewTranscoder[T any]() Transcoder[T] {
 	return &transcoder[T]{
-		jsonTranscoder:     NewJSONTranscoder[T](),
-		standardTranscoder: NewZSTDTranscoder(),
-		binaryTranscoder:   NewBase64Transcoder(),
+		jsonTranscoder:     lib.NewJSONTranscoder[T](),
+		standardTranscoder: lib.NewZSTDTranscoder(),
+		binaryTranscoder:   lib.NewBase64Transcoder(),
 	}
 }
 

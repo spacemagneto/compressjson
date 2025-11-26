@@ -1,4 +1,4 @@
-package compressjson
+package lib
 
 import "github.com/goccy/go-json"
 
